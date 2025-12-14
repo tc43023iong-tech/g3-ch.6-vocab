@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { vocabList, WordItem } from '../../types';
 import confetti from 'canvas-confetti';
 
@@ -12,11 +12,18 @@ export const BubblePop: React.FC<Props> = ({ onComplete, onBack }) => {
   const [isFinished, setIsFinished] = useState(false);
   const [bubbles, setBubbles] = useState<WordItem[]>([]);
   const [popped, setPopped] = useState<Set<string>>(new Set());
-  
-  // Force animation reset on new round
-  const [roundKey, setRoundKey] = useState(0); 
+  const [roundKey, setRoundKey] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const currentWord = vocabList[currentIndex];
+
+  // Assign a random water pokemon to each question number (0 to vocabList.length-1)
+  const [rewardPokemon] = useState(() => {
+     const waterPokemonIds = [7, 54, 60, 79, 86, 90, 98, 116, 118, 120, 129, 131, 134, 158];
+     return vocabList.map(() => waterPokemonIds[Math.floor(Math.random() * waterPokemonIds.length)]);
+  });
+
+  // Auto-scroll removed as requested
 
   const shuffle = <T,>(array: T[]): T[] => array.sort(() => Math.random() - 0.5);
 
@@ -29,23 +36,6 @@ export const BubblePop: React.FC<Props> = ({ onComplete, onBack }) => {
     setPopped(new Set());
     setRoundKey(prev => prev + 1); 
   }, [currentIndex, currentWord]);
-
-  // Generate static sea creatures (Pokemon) for the background to avoid re-render jumps
-  const seaCreatures = useMemo(() => {
-      // Water Type Pokemon IDs from PokeAPI
-      // 7: Squirtle, 54: Psyduck, 60: Poliwag, 79: Slowpoke, 86: Seel, 90: Shellder, 
-      // 98: Krabby, 116: Horsea, 118: Goldeen, 120: Staryu, 129: Magikarp, 
-      // 131: Lapras, 134: Vaporeon, 158: Totodile
-      const pokemonIds = [7, 54, 60, 79, 86, 90, 98, 116, 118, 120, 129, 131, 134, 158];
-      
-      return Array.from({ length: 10 }).map((_, i) => ({
-          id: pokemonIds[Math.floor(Math.random() * pokemonIds.length)],
-          top: Math.random() * 80 + 10, // 10% to 90% top
-          duration: Math.random() * 20 + 20, // 20-40s duration (slower is better for background)
-          delay: Math.random() * 10,
-          direction: Math.random() > 0.5 ? 'left' : 'right'
-      }));
-  }, []);
 
   const handleBubbleClick = (word: WordItem) => {
     if (popped.has(word.en)) return;
@@ -89,11 +79,10 @@ export const BubblePop: React.FC<Props> = ({ onComplete, onBack }) => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-cyan-400 via-blue-500 to-indigo-900 overflow-hidden relative">
+    <div className="min-h-screen w-full bg-gradient-to-b from-cyan-400 via-blue-500 to-indigo-900 overflow-hidden flex flex-col">
       
-      {/* Background Layer: Rising small bubbles & Swimming Pokemon */}
+      {/* Background Layer: Rising bubbles */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-          {/* Small rising bubbles */}
           {[...Array(20)].map((_, i) => (
               <div key={`bg-bubble-${i}`} 
                    className="absolute bg-white/10 rounded-full animate-rise"
@@ -107,90 +96,103 @@ export const BubblePop: React.FC<Props> = ({ onComplete, onBack }) => {
                    }}
               />
           ))}
-          
-          {/* Swimming Pokemon */}
-          {seaCreatures.map((creature, i) => (
-               <img
-                    key={`animal-${i}`} 
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${creature.id}.png`}
-                    alt="Pokemon"
-                    className={`absolute opacity-40`} // Keep low opacity for background
-                    style={{
-                        top: `${creature.top}%`,
-                        width: '120px',
-                        height: 'auto',
-                        left: creature.direction === 'left' ? '110vw' : '-20vw',
-                        // Assumes most Pokemon art faces Left/Front-Left. 
-                        // swimRight flips it to look like it's moving right.
-                        animation: `${creature.direction === 'left' ? 'swimLeft' : 'swimRight'} ${creature.duration}s linear infinite`,
-                        animationDelay: `-${creature.delay}s`,
-                    }}
-               />
-          ))}
       </div>
 
-      {/* Header */}
-      <div className="relative z-50 flex justify-between items-center p-6 w-full max-w-7xl mx-auto">
-        <button onClick={onBack} className="text-2xl bg-white/20 p-3 rounded-full hover:bg-white/40 backdrop-blur-md transition text-white shadow-lg">🔙</button>
-        <div className="flex items-center gap-2">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png" alt="Squirtle" className="w-16 h-16 object-contain drop-shadow-md" />
-            <div className="text-white/80 font-bold text-xl tracking-wider">
-                Level {currentIndex + 1} / {vocabList.length}
+      {/* Header with Pokemon Collection Bar */}
+      <div className="relative z-50 p-4 bg-white/10 backdrop-blur-md shadow-lg border-b border-white/20">
+        <div className="max-w-7xl mx-auto flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+                <button onClick={onBack} className="bg-white/20 px-4 py-2 rounded-full hover:bg-white/40 transition text-white font-bold">
+                    🔙 Home
+                </button>
+                <div className="flex items-center gap-2 text-white font-bold">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png" alt="Squirtle" className="w-8 h-8 object-contain" />
+                    <span>Level {currentIndex + 1}/{vocabList.length}</span>
+                </div>
+            </div>
+
+            {/* Progress Bar (Bubbles instead of Shells) */}
+            <div 
+                ref={scrollRef}
+                className="flex gap-3 overflow-x-auto pb-4 pt-2 scrollbar-hide px-2 items-center"
+            >
+                {vocabList.map((_, idx) => (
+                    <div key={idx} className="relative flex-shrink-0 w-16 h-16 flex items-center justify-center">
+                        
+                        {/* The Bubble Container */}
+                        <div className={`
+                            w-14 h-14 rounded-full border-2 border-white/40 shadow-inner flex items-center justify-center transition-all duration-500 relative
+                            ${idx < currentIndex ? 'bg-blue-300/40' : 'bg-blue-900/30'}
+                            ${idx === currentIndex ? 'scale-110 border-yellow-300 border-4 shadow-[0_0_15px_rgba(253,224,71,0.6)]' : ''}
+                        `}>
+                            {/* Shine effect */}
+                            <div className="absolute top-2 right-3 w-3 h-2 bg-white/50 rounded-full rotate-[-45deg] blur-[1px]"></div>
+                        </div>
+
+                        {/* The Pokemon Reward (Appears if question answered) */}
+                        {idx < currentIndex && (
+                            <div className="absolute inset-0 animate-bounce p-1">
+                                <img 
+                                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${rewardPokemon[idx]}.png`} 
+                                    alt="Reward"
+                                    className="w-full h-full object-contain drop-shadow-md"
+                                />
+                            </div>
+                        )}
+                        
+                        {/* Current Indicator (Question Mark) */}
+                        {idx === currentIndex && (
+                             <div className="absolute text-white/80 font-black text-2xl drop-shadow-md animate-pulse">?</div>
+                        )}
+                    </div>
+                ))}
             </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="relative z-40 flex flex-col items-center justify-center min-h-[80vh] w-full max-w-7xl mx-auto">
+      {/* Main Game Area */}
+      <div className="flex-1 relative z-40 flex flex-col items-center justify-center p-4">
           
           {/* Question Banner */}
-          <div className="mb-12 text-center animate-bounce-slow">
-              <div className="inline-block bg-blue-900/40 backdrop-blur-md px-12 py-6 rounded-full border-2 border-cyan-300/50 shadow-[0_0_40px_rgba(0,255,255,0.2)]">
-                 <h2 className="text-5xl md:text-6xl font-black text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] mb-2">
+          <div key={`q-${currentIndex}`} className="mb-8 text-center animate-bounce-slow">
+              <div className="inline-block bg-blue-900/40 backdrop-blur-md px-10 py-5 rounded-3xl border border-cyan-300/30 shadow-[0_0_40px_rgba(0,255,255,0.2)]">
+                 <h2 className="text-4xl md:text-5xl font-black text-white drop-shadow-lg mb-2">
                      {currentWord.cn}
                  </h2>
-                 <p className="text-cyan-200 font-bold text-lg uppercase tracking-[0.2em]">Pop the correct bubble!</p>
+                 <p className="text-cyan-200 font-bold text-sm md:text-lg uppercase tracking-widest">Find the bubble!</p>
               </div>
           </div>
 
-          {/* Bubbles Grid - 6 Bubbles Floating */}
-          <div key={roundKey} className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-16 w-full max-w-5xl px-4">
+          {/* Bubbles Grid */}
+          <div key={roundKey} className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-12 w-full max-w-4xl">
              {bubbles.map((b, idx) => {
                  const isPopped = popped.has(b.en);
-                 // Generate deterministic randoms for this render based on index
                  const delay = (idx * 0.5) % 2; 
                  const duration = 3 + (idx % 3);
                  
                  return (
-                     <div key={b.en} className="flex items-center justify-center h-48 md:h-56">
+                     <div key={b.en} className="flex items-center justify-center h-40 md:h-48">
                         {!isPopped ? (
                             <button
                                 onClick={() => handleBubbleClick(b)}
-                                className="relative group cursor-pointer transition-transform active:scale-90"
+                                className="relative group cursor-pointer transition-transform active:scale-95 touch-manipulation"
                                 style={{
                                     animation: `bob ${duration}s ease-in-out infinite alternate ${delay}s`
                                 }}
                             >
                                 {/* Bubble Sphere */}
-                                <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-gradient-to-br from-white/30 to-blue-500/30 backdrop-blur-sm border-2 border-white/50 shadow-[0_0_30px_rgba(255,255,255,0.2)] flex flex-col items-center justify-center relative overflow-hidden group-hover:bg-blue-400/30 transition-colors">
-                                    
-                                    {/* Shine effect */}
-                                    <div className="absolute top-4 right-6 w-10 h-6 bg-white/60 rounded-full rotate-[-45deg] blur-[2px]"></div>
-                                    <div className="absolute bottom-6 left-8 w-4 h-4 bg-white/40 rounded-full blur-[1px]"></div>
-
-                                    {/* Content */}
-                                    <div className="relative z-10 text-center transform group-hover:scale-110 transition-transform duration-300 px-2">
-                                        <div className="text-6xl md:text-7xl mb-1 filter drop-shadow-lg">{b.emoji}</div>
-                                        <div className="text-lg md:text-2xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-none break-words max-w-[180px]">
+                                <div className="w-36 h-36 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-white/30 to-blue-500/30 backdrop-blur-sm border-2 border-white/50 shadow-lg flex flex-col items-center justify-center relative overflow-hidden group-hover:bg-blue-400/30 transition-colors">
+                                    <div className="absolute top-4 right-6 w-8 h-5 bg-white/60 rounded-full rotate-[-45deg] blur-[2px]"></div>
+                                    <div className="relative z-10 text-center px-2">
+                                        <div className="text-2xl md:text-3xl font-black text-white drop-shadow-md leading-tight break-words max-w-[140px]">
                                             {b.en}
                                         </div>
                                     </div>
                                 </div>
                             </button>
                         ) : (
-                            // Placeholder to keep grid stable, optionally show a 'pop' effect here
-                            <div className="w-40 h-40 md:w-56 md:h-56 flex items-center justify-center opacity-0 transition-opacity duration-500">
-                                💥
+                            <div className="w-36 h-36 flex items-center justify-center text-4xl animate-ping opacity-0">
+                                💦
                             </div>
                         )}
                      </div>
@@ -205,21 +207,20 @@ export const BubblePop: React.FC<Props> = ({ onComplete, onBack }) => {
             50% { opacity: 0.5; }
             100% { transform: translateY(-10vh); opacity: 0; }
         }
-        @keyframes swimRight {
-            from { transform: translateX(-20vw) scaleX(-1); }
-            to { transform: translateX(120vw) scaleX(-1); }
-        }
-        @keyframes swimLeft {
-            from { transform: translateX(120vw) scaleX(1); }
-            to { transform: translateX(-20vw) scaleX(1); }
-        }
         @keyframes bob {
             0% { transform: translateY(0) rotate(-2deg); }
-            100% { transform: translateY(-20px) rotate(2deg); }
+            100% { transform: translateY(-15px) rotate(2deg); }
         }
         @keyframes bounce-slow {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
       `}</style>
     </div>

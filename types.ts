@@ -35,4 +35,28 @@ export const furnitureList = [
   "🛁", "🚽", "🧶", "🎸", "🔭", "🧺", "🕯️", "📦", "🚪", "🎏"
 ];
 
+// Pokemon IDs corresponding to cute/popular pokemon
+export const pokemonList = [
+  1,   // Bulbasaur
+  4,   // Charmander
+  7,   // Squirtle
+  25,  // Pikachu
+  39,  // Jigglypuff
+  52,  // Meowth
+  54,  // Psyduck
+  60,  // Poliwag
+  133, // Eevee
+  143, // Snorlax
+  151, // Mew
+  175, // Togepi
+  252, // Treecko
+  255, // Torchic
+  258, // Mudkip
+  300, // Skitty
+  393, // Piplup
+  417, // Pachirisu
+  448, // Lucario
+  722  // Rowlet
+];
+
 export type Screen = 'home' | 'learn' | 'game1' | 'game2' | 'game3' | 'game4' | 'game5' | 'treehouse';
