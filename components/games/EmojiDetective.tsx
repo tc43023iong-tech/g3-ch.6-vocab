@@ -57,16 +57,20 @@ export const EmojiDetective: React.FC<Props> = ({ onComplete, onBack }) => {
   if (isFinished) {
     return (
       <div className="min-h-screen bg-blue-100 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full">
-          <div className="text-8xl mb-4">🕵️‍♂️</div>
-          <h2 className="text-3xl font-bold text-blue-600 mb-4">Case Closed!</h2>
-          <p className="text-xl mb-8">Score: {score} / {vocabList.length}</p>
-          <button 
-            onClick={onComplete}
-            className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-green-600 transition"
-          >
-            Collect Reward! 🌳
-          </button>
+        <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full relative overflow-visible">
+          <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-32 h-32">
+             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu" className="w-full h-full object-contain" />
+          </div>
+          <div className="mt-8">
+              <h2 className="text-3xl font-bold text-blue-600 mb-4">Case Closed!</h2>
+              <p className="text-xl mb-8">Score: {score} / {vocabList.length}</p>
+              <button 
+                onClick={onComplete}
+                className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-green-600 transition"
+              >
+                Collect Reward! 🌳
+              </button>
+          </div>
         </div>
       </div>
     );
@@ -77,8 +81,11 @@ export const EmojiDetective: React.FC<Props> = ({ onComplete, onBack }) => {
   return (
     <div className="min-h-screen bg-blue-50 p-4 flex flex-col items-center">
        <div className="w-full max-w-6xl flex justify-between items-center mb-6">
-        <button onClick={onBack} className="text-2xl">🔙</button>
-        <div className="text-xl font-bold text-blue-400">Question {currentIndex + 1}/{vocabList.length}</div>
+        <button onClick={onBack} className="text-2xl bg-white p-2 rounded-full shadow-md">🔙</button>
+        <div className="flex items-center gap-3">
+             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu" className="w-16 h-16 object-contain" />
+             <div className="text-xl font-bold text-blue-400">Question {currentIndex + 1}/{vocabList.length}</div>
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-6xl w-full">
@@ -86,7 +93,7 @@ export const EmojiDetective: React.FC<Props> = ({ onComplete, onBack }) => {
           <span className="text-8xl animate-pulse">{currentWord.emoji}</span>
         </div>
         
-        <div className="bg-blue-100 px-8 py-3 rounded-full mb-10 text-blue-800 font-bold text-2xl">
+        <div className="bg-blue-100 px-8 py-3 rounded-full mb-10 text-blue-800 font-bold text-2xl shadow-sm border border-blue-200">
             Hint: {currentWord.cn}
         </div>
 

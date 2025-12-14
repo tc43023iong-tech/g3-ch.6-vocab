@@ -57,15 +57,19 @@ export const FillInBlank: React.FC<Props> = ({ onComplete, onBack }) => {
   if (isFinished) {
     return (
       <div className="min-h-screen bg-cyan-100 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full">
-          <div className="text-8xl mb-4">✍️</div>
-          <h2 className="text-3xl font-bold text-cyan-600 mb-4">Great Job!</h2>
-          <button 
-            onClick={onComplete}
-            className="w-full py-4 bg-cyan-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-cyan-600 transition"
-          >
-            Collect Reward! 🌳
-          </button>
+        <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full relative">
+          <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-32 h-32">
+             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/235.png" alt="Smeargle" className="w-full h-full object-contain" />
+          </div>
+          <div className="mt-8">
+              <h2 className="text-3xl font-bold text-cyan-600 mb-4">Great Job!</h2>
+              <button 
+                onClick={onComplete}
+                className="w-full py-4 bg-cyan-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-cyan-600 transition"
+              >
+                Collect Reward! 🌳
+              </button>
+          </div>
         </div>
       </div>
     );
@@ -76,8 +80,11 @@ export const FillInBlank: React.FC<Props> = ({ onComplete, onBack }) => {
   return (
     <div className="min-h-screen bg-cyan-50 p-4 flex flex-col items-center">
        <div className="w-full max-w-6xl flex justify-between items-center mb-6">
-        <button onClick={onBack} className="text-2xl">🔙</button>
-        <div className="text-xl font-bold text-cyan-600">Question {currentIndex + 1}/{vocabList.length}</div>
+        <button onClick={onBack} className="text-2xl bg-white p-2 rounded-full shadow-md">🔙</button>
+        <div className="flex items-center gap-3">
+             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/235.png" alt="Smeargle" className="w-16 h-16 object-contain" />
+             <div className="text-xl font-bold text-cyan-600">Question {currentIndex + 1}/{vocabList.length}</div>
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-6xl w-full">
@@ -90,7 +97,6 @@ export const FillInBlank: React.FC<Props> = ({ onComplete, onBack }) => {
            
            <div className="flex justify-center items-center gap-4">
                <span className="text-5xl">{currentWord.emoji}</span>
-               {/* Chinese Hint Removed as requested */}
            </div>
         </div>
 

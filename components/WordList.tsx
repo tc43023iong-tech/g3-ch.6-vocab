@@ -16,9 +16,13 @@ export const WordList: React.FC<WordListProps> = ({ onBack }) => {
           >
             🏠 Home
           </button>
-          <h1 className="text-3xl md:text-4xl font-black text-indigo-600">
-            📚 Word List
-          </h1>
+          
+          <div className="flex items-center gap-4">
+             <h1 className="text-3xl md:text-4xl font-black text-indigo-600">
+                Word List
+             </h1>
+             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" alt="Bulbasaur" className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-lg" />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">

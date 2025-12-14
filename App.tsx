@@ -46,15 +46,18 @@ function App() {
       default:
         return (
           <div className="min-h-screen bg-yellow-50 p-6 flex flex-col items-center">
-            <header className="mb-8 text-center mt-8">
-              <h1 className="text-4xl md:text-6xl font-black text-indigo-600 mb-2 tracking-tight">
+            <header className="mb-8 text-center mt-8 relative">
+              <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-32 h-32 md:w-40 md:h-40 z-10 pointer-events-none">
+                 <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png" alt="Eevee" className="w-full h-full object-contain animate-bounce" style={{ animationDuration: '3s' }} />
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black text-indigo-600 mb-2 tracking-tight relative z-20 pt-16">
                 g3 ch.6 
                 <span className="block text-yellow-500 mt-2">vocab</span>
               </h1>
-              <p className="text-gray-500 font-medium">Grade 3 Vocabulary Games</p>
+              <p className="text-gray-500 font-medium mt-2">Grade 3 Vocabulary Games</p>
             </header>
 
-            <div className="w-full max-w-md space-y-4">
+            <div className="w-full max-w-md space-y-4 relative z-20">
               <MenuButton 
                 onClick={() => setScreen('learn')} 
                 label="Word List" 

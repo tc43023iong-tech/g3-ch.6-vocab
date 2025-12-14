@@ -70,15 +70,19 @@ export const BubblePop: React.FC<Props> = ({ onComplete, onBack }) => {
   if (isFinished) {
     return (
       <div className="min-h-screen bg-sky-200 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full">
-          <div className="text-8xl mb-4">🫧</div>
-          <h2 className="text-3xl font-bold text-sky-600 mb-4">Pop-tastic!</h2>
-          <button 
-            onClick={onComplete}
-            className="w-full py-4 bg-sky-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-sky-600 transition"
-          >
-            Collect Reward! 🌳
-          </button>
+        <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full relative">
+          <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-32 h-32">
+             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png" alt="Squirtle" className="w-full h-full object-contain" />
+          </div>
+          <div className="mt-8">
+              <h2 className="text-3xl font-bold text-sky-600 mb-4">Pop-tastic!</h2>
+              <button 
+                onClick={onComplete}
+                className="w-full py-4 bg-sky-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-sky-600 transition"
+              >
+                Collect Reward! 🌳
+              </button>
+          </div>
         </div>
       </div>
     );
@@ -128,8 +132,11 @@ export const BubblePop: React.FC<Props> = ({ onComplete, onBack }) => {
       {/* Header */}
       <div className="relative z-50 flex justify-between items-center p-6 w-full max-w-7xl mx-auto">
         <button onClick={onBack} className="text-2xl bg-white/20 p-3 rounded-full hover:bg-white/40 backdrop-blur-md transition text-white shadow-lg">🔙</button>
-        <div className="text-white/80 font-bold text-xl tracking-wider">
-            Level {currentIndex + 1} / {vocabList.length}
+        <div className="flex items-center gap-2">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png" alt="Squirtle" className="w-16 h-16 object-contain drop-shadow-md" />
+            <div className="text-white/80 font-bold text-xl tracking-wider">
+                Level {currentIndex + 1} / {vocabList.length}
+            </div>
         </div>
       </div>
 

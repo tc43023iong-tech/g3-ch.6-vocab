@@ -19,10 +19,15 @@ export const TreeHouse: React.FC<TreeHouseProps> = ({ furnitureCount, onBack }) 
           >
             ⬅️ Back
           </button>
-          <h1 className="text-3xl font-extrabold text-green-700 tracking-wider">
-            🏡 My Tree House
-          </h1>
-          <div className="w-20"></div> {/* Spacer */}
+          
+          <div className="flex items-center gap-2">
+             <h1 className="text-2xl md:text-3xl font-extrabold text-green-700 tracking-wider">
+                My Tree House
+             </h1>
+             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/722.png" alt="Rowlet" className="w-16 h-16 object-contain -mt-2" />
+          </div>
+          
+          <div className="w-10 md:w-20"></div> {/* Spacer */}
         </div>
 
         <div className="relative bg-sky-200 rounded-3xl h-96 w-full border-b-8 border-green-600 overflow-hidden flex flex-col justify-end items-center shadow-inner">

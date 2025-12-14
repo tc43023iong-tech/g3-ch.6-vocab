@@ -63,15 +63,19 @@ export const SpellingBee: React.FC<Props> = ({ onComplete, onBack }) => {
   if (isFinished) {
       return (
         <div className="min-h-screen bg-yellow-100 flex flex-col items-center justify-center p-4">
-            <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full">
-            <div className="text-8xl mb-4">🐝</div>
-            <h2 className="text-3xl font-bold text-yellow-600 mb-4">You are a Spelling Bee!</h2>
-            <button 
-                onClick={onComplete}
-                className="w-full py-4 bg-yellow-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-600 transition"
-            >
-                Collect Reward! 🌳
-            </button>
+            <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full relative">
+            <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-32 h-32">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/415.png" alt="Combee" className="w-full h-full object-contain" />
+            </div>
+            <div className="mt-8">
+                <h2 className="text-3xl font-bold text-yellow-600 mb-4">You are a Spelling Bee!</h2>
+                <button 
+                    onClick={onComplete}
+                    className="w-full py-4 bg-yellow-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-600 transition"
+                >
+                    Collect Reward! 🌳
+                </button>
+            </div>
             </div>
         </div>
       );
@@ -80,16 +84,19 @@ export const SpellingBee: React.FC<Props> = ({ onComplete, onBack }) => {
   return (
     <div className="min-h-screen bg-yellow-50 p-4 flex flex-col items-center">
        <div className="w-full flex justify-between items-center mb-8 max-w-6xl">
-        <button onClick={onBack} className="text-2xl">🔙</button>
-        <div className="text-xl font-bold text-yellow-600">Word {currentIndex + 1}/{vocabList.length}</div>
+        <button onClick={onBack} className="text-2xl bg-white p-2 rounded-full shadow-md">🔙</button>
+        <div className="flex items-center gap-3">
+             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/415.png" alt="Combee" className="w-16 h-16 object-contain" />
+             <div className="text-xl font-bold text-yellow-600">Word {currentIndex + 1}/{vocabList.length}</div>
+        </div>
       </div>
 
-      <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-5xl flex flex-col items-center min-h-[500px] justify-center">
+      <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-5xl flex flex-col items-center min-h-[500px] justify-center relative border-b-8 border-yellow-200">
           <div className="text-9xl mb-6 animate-bounce">{currentWordObj.emoji}</div>
           <div className="text-3xl text-gray-500 font-bold mb-10">{currentWordObj.cn}</div>
 
           {/* Input Area */}
-          <div className="flex flex-wrap gap-3 justify-center mb-10 min-h-[5rem] border-b-4 border-yellow-200 w-full p-6 bg-yellow-50 rounded-2xl">
+          <div className="flex flex-wrap gap-3 justify-center mb-10 min-h-[5rem] border-4 border-dashed border-yellow-300 w-full p-6 bg-yellow-50 rounded-2xl">
              {inputLine.map((item) => (
                  <button 
                     key={item.id}
