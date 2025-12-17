@@ -10,7 +10,7 @@ export interface WordItem {
 
 export const vocabList: WordItem[] = [
   { en: "shopping centre", cn: "購物中心", ipa: "/ˈʃɒpɪŋ ˈsentə/", emoji: "🏬", sentence: "Let's go to the shopping centre to buy clothes." },
-  { en: "café", cn: "咖啡店", ipa: "/ˈkæ feɪ/", emoji: "☕", sentence: "Dad drinks coffee at the café." },
+  { en: "cafe", cn: "咖啡店", ipa: "/ˈkæ feɪ/", emoji: "☕", sentence: "Dad drinks coffee at the cafe." },
   { en: "have afternoon tea", cn: "吃下午茶", ipa: "/həv ɑːftəˈnuːn ti:/", emoji: "🍰", sentence: "We have afternoon tea with cake on Sunday." },
   { en: "restaurant", cn: "酒樓", ipa: "/ˈrestərɒnt/", emoji: "🥢", sentence: "We eat dinner at a Chinese restaurant." },
   { en: "eat dim sum", cn: "吃點心", ipa: "/iːt dɪm sʌm/", emoji: "🥟", sentence: "I like to eat dim sum with my family." },
