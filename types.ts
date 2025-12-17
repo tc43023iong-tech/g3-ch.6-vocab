@@ -60,4 +60,4 @@ export const pokemonList = [
   722  // Rowlet
 ];
 
-export type Screen = 'home' | 'learn' | 'game1' | 'game2' | 'game3' | 'game4' | 'game5' | 'game6' | 'treehouse';
+export type Screen = 'home' | 'learn' | 'game1' | 'game2' | 'game3' | 'game4' | 'game5' | 'game6' | 'game7' | 'treehouse';

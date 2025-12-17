@@ -8,6 +8,7 @@ import { SpellingBee } from './components/games/SpellingBee';
 import { FillInBlank } from './components/games/FillInBlank';
 import { BubblePop } from './components/games/BubblePop';
 import { WordSearch } from './components/games/WordSearch';
+import { RainGame } from './components/games/RainGame';
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
@@ -18,7 +19,7 @@ function App() {
     setScreen('treehouse');
   };
 
-  const MenuButton = ({ onClick, label, pokemonId, color }: { onClick: () => void, label: string, pokemonId: number, color: string }) => (
+  const MenuButton = ({ onClick, label, pokemonId, color, emoji }: { onClick: () => void, label: string, pokemonId: number, color: string, emoji?: string }) => (
     <button 
       onClick={onClick}
       className={`${color} w-full py-3 md:py-4 rounded-3xl shadow-lg transform transition hover:scale-105 hover:shadow-xl flex flex-col items-center justify-center gap-2 border-b-4 border-black/10 h-full min-h-[140px] relative overflow-hidden`}
@@ -32,7 +33,10 @@ function App() {
             className="w-full h-full object-contain drop-shadow-md" 
         />
       </div>
-      <span className="text-lg md:text-xl font-black text-white text-center z-10 leading-tight px-2">{label}</span>
+      <div className="text-center z-10 px-2">
+         <span className="text-lg md:text-xl font-black text-white block leading-tight">{label}</span>
+         {emoji && <span className="text-white/80 text-sm font-bold">{emoji}</span>}
+      </div>
     </button>
   );
 
@@ -54,6 +58,8 @@ function App() {
         return <BubblePop onComplete={handleGameComplete} onBack={() => setScreen('home')} />;
       case 'game6':
         return <WordSearch onComplete={handleGameComplete} onBack={() => setScreen('home')} />;
+      case 'game7':
+        return <RainGame onComplete={handleGameComplete} onBack={() => setScreen('home')} />;
       default:
         return (
           <div className="min-h-screen bg-yellow-50 p-4 flex flex-col items-center">
@@ -95,13 +101,14 @@ function App() {
               <div className="h-2"></div>
               
               {/* Game Grid - 2 Columns */}
-              <div className="grid grid-cols-2 gap-4">
-                  <MenuButton onClick={() => setScreen('game1')} label="1. Detective" pokemonId={25} color="bg-blue-400" />
-                  <MenuButton onClick={() => setScreen('game2')} label="2. Match Match" pokemonId={132} color="bg-purple-400" />
-                  <MenuButton onClick={() => setScreen('game3')} label="3. Spelling" pokemonId={415} color="bg-yellow-400" />
-                  <MenuButton onClick={() => setScreen('game4')} label="4. Fill Blanks" pokemonId={235} color="bg-cyan-400" />
-                  <MenuButton onClick={() => setScreen('game5')} label="5. Bubble Pop" pokemonId={7} color="bg-pink-400" />
-                  <MenuButton onClick={() => setScreen('game6')} label="6. Word Search" pokemonId={43} color="bg-emerald-400" />
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <MenuButton onClick={() => setScreen('game1')} label="1. Detective" pokemonId={25} color="bg-blue-400" emoji="🔍" />
+                  <MenuButton onClick={() => setScreen('game2')} label="2. Match" pokemonId={132} color="bg-purple-400" emoji="🃏" />
+                  <MenuButton onClick={() => setScreen('game3')} label="3. Spelling" pokemonId={415} color="bg-yellow-400" emoji="🐝" />
+                  <MenuButton onClick={() => setScreen('game4')} label="4. Blanks" pokemonId={235} color="bg-cyan-400" emoji="✍️" />
+                  <MenuButton onClick={() => setScreen('game5')} label="5. Pop!" pokemonId={7} color="bg-pink-400" emoji="🫧" />
+                  <MenuButton onClick={() => setScreen('game6')} label="6. Search" pokemonId={43} color="bg-emerald-400" emoji="🔎" />
+                  <MenuButton onClick={() => setScreen('game7')} label="7. Rain Drops" pokemonId={186} color="bg-blue-500" emoji="☔" />
               </div>
 
               <div className="h-2"></div>
