@@ -13,6 +13,7 @@ interface RainDrop {
     isCorrect: boolean;
     left: number; // 0-90%
     duration: number; // seconds
+    size: 'small' | 'medium' | 'large';
 }
 
 export const RainGame: React.FC<Props> = ({ onComplete, onBack }) => {
@@ -21,16 +22,17 @@ export const RainGame: React.FC<Props> = ({ onComplete, onBack }) => {
   const [score, setScore] = useState(0);
   const [drops, setDrops] = useState<RainDrop[]>([]);
   const [isFinished, setIsFinished] = useState(false);
+  const [splashes, setSplashes] = useState<{id: number, x: number, y: number}[]>([]);
 
   const currentTarget = shuffledVocab[level];
   const dropIdCounter = useRef(0);
+  const splashIdCounter = useRef(0);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
       if (isFinished) return;
       
-      // Faster spawn rate: every 700ms instead of 1200ms
-      const spawnRate = 700; 
+      const spawnRate = 800; 
       timerRef.current = window.setInterval(() => {
           spawnDrop();
       }, spawnRate);
@@ -41,8 +43,8 @@ export const RainGame: React.FC<Props> = ({ onComplete, onBack }) => {
   }, [level, isFinished]);
 
   const spawnDrop = () => {
-      // 35% chance for the correct word to appear amidst the distractors
       const isCorrectSpawn = Math.random() < 0.35;
+      const sizes: ('small' | 'medium' | 'large')[] = ['small', 'medium', 'large'];
       
       let wordObj;
       if (isCorrectSpawn) {
@@ -56,33 +58,34 @@ export const RainGame: React.FC<Props> = ({ onComplete, onBack }) => {
           id: dropIdCounter.current++,
           word: wordObj.en,
           isCorrect: wordObj.en === currentTarget.en,
-          left: Math.random() * 85 + 2.5, // Slightly more horizontal variety
-          duration: Math.random() * 3 + 3.5 // 3.5 to 6.5 seconds fall time
+          left: Math.random() * 80 + 10, 
+          duration: Math.random() * 2 + 4, // 4 to 6 seconds
+          size: sizes[Math.floor(Math.random() * sizes.length)]
       };
 
       setDrops(prev => [...prev, newDrop]);
   };
 
-  // Cleanup old drops periodically to prevent DOM bloat
-  useEffect(() => {
-      const cleanup = setInterval(() => {
-          // Keep up to 30 drops on screen for a dense "rain" feel
-          setDrops(prev => prev.slice(-30));
-      }, 3000);
-      return () => clearInterval(cleanup);
-  }, []);
+  const createSplash = (x: number, y: number) => {
+      const id = splashIdCounter.current++;
+      setSplashes(prev => [...prev, { id, x, y }]);
+      setTimeout(() => {
+          setSplashes(prev => prev.filter(s => s.id !== id));
+      }, 600);
+  };
 
-  const handleDropClick = (drop: RainDrop) => {
+  const handleDropClick = (drop: RainDrop, e: React.MouseEvent) => {
+      createSplash(e.clientX, e.clientY);
+
       if (drop.isCorrect) {
-          // Correct!
           confetti({ 
             particleCount: 40, 
             spread: 60, 
-            origin: { x: drop.left / 100, y: 0.8 }, 
-            colors: ['#60a5fa', '#93c5fd', '#ffffff'] 
+            origin: { x: drop.left / 100, y: e.clientY / window.innerHeight }, 
+            colors: ['#60a5fa', '#ffffff', '#93c5fd'] 
           });
           setScore(s => s + 1);
-          setDrops([]); // Clear current screen on success
+          setDrops([]); 
           
           setTimeout(() => {
               if (level < shuffledVocab.length - 1) { 
@@ -90,9 +93,8 @@ export const RainGame: React.FC<Props> = ({ onComplete, onBack }) => {
               } else {
                   setIsFinished(true);
               }
-          }, 500);
+          }, 600);
       } else {
-          // Wrong word - remove just that drop with a small "miss" effect
           setDrops(prev => prev.filter(d => d.id !== drop.id));
       }
   };
@@ -103,15 +105,17 @@ export const RainGame: React.FC<Props> = ({ onComplete, onBack }) => {
 
   if (isFinished) {
       return (
-        <div className="min-h-screen bg-blue-200 flex flex-col items-center justify-center p-4">
-             <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full relative">
-                 <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-32 h-32">
-                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/186.png" alt="Politoed" className="w-full h-full object-contain" />
+        <div className="min-h-screen bg-blue-100 flex flex-col items-center justify-center p-4">
+             <div className="bg-white p-10 rounded-[3rem] shadow-2xl text-center max-w-md w-full relative border-8 border-blue-200">
+                 <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-40 h-40">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/186.png" alt="Politoed" className="w-full h-full object-contain animate-bounce" />
                  </div>
-                 <div className="mt-8">
-                     <h2 className="text-3xl font-bold text-blue-600 mb-2">Rain Master!</h2>
-                     <p className="text-gray-500 mb-6 font-bold text-xl">You caught all 20 words! 🏆</p>
-                     <button onClick={onComplete} className="w-full py-4 bg-blue-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-blue-600 transition">Collect Reward! 🌳</button>
+                 <div className="mt-12">
+                     <h2 className="text-4xl font-black text-blue-600 mb-2 italic">Rainy Hero!</h2>
+                     <p className="text-gray-500 mb-8 font-bold text-xl uppercase tracking-widest">You caught {score} drops!</p>
+                     <button onClick={onComplete} className="w-full py-5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-3xl font-black text-2xl shadow-xl hover:scale-105 transition-transform active:scale-95 border-b-8 border-blue-800">
+                        GET PRIZE! 🎁
+                     </button>
                  </div>
              </div>
         </div>
@@ -119,88 +123,146 @@ export const RainGame: React.FC<Props> = ({ onComplete, onBack }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 relative overflow-hidden flex flex-col items-center font-sans">
-        {/* Dynamic Background Rain Texture */}
-        <div className="absolute inset-0 pointer-events-none opacity-30">
-             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')] animate-rain"></div>
+    <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-indigo-950 relative overflow-hidden flex flex-col items-center font-sans">
+        
+        {/* Layered Background Rain Streaks for Depth */}
+        <div className="absolute inset-0 pointer-events-none">
+             <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')] animate-rain-fast"></div>
+             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')] animate-rain-slow scale-150"></div>
         </div>
         
+        {/* Weather Clouds Decor */}
+        <div className="absolute top-0 w-full flex justify-around opacity-30 pointer-events-none">
+            <span className="text-8xl animate-float">☁️</span>
+            <span className="text-9xl animate-float-delayed">☁️</span>
+            <span className="text-7xl animate-float">☁️</span>
+        </div>
+
         {/* Top Header UI */}
-        <div className="z-20 w-full max-w-lg flex justify-between items-center p-4 text-white">
-            <button onClick={onBack} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full font-bold backdrop-blur-sm border border-white/10 transition-colors">Exit</button>
-            <div className="flex items-center gap-2 bg-blue-900/60 px-5 py-2 rounded-full backdrop-blur-md border border-blue-400/40 shadow-lg">
-                <span className="text-2xl animate-pulse">☔</span>
-                <span className="text-xl font-black">{score} / 20</span>
+        <div className="z-50 w-full max-w-2xl flex justify-between items-center p-6 text-white">
+            <button onClick={onBack} className="bg-white/10 hover:bg-white/20 px-6 py-2 rounded-full font-black backdrop-blur-md border-2 border-white/20 transition-all flex items-center gap-2 group">
+                <span className="group-hover:-translate-x-1 transition-transform">🔙</span> Exit
+            </button>
+            <div className="flex items-center gap-3 bg-blue-500/30 px-6 py-2 rounded-full backdrop-blur-xl border-2 border-blue-300/40 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+                <span className="text-3xl animate-pulse">💧</span>
+                <span className="text-2xl font-black tabular-nums">{score} / 20</span>
             </div>
         </div>
 
-        {/* Target Board */}
-        <div className="z-20 mt-4 mb-2 animate-bounce-slow">
-            <div className="bg-white/95 backdrop-blur-md border-4 border-blue-400 px-10 py-6 rounded-3xl shadow-[0_0_40px_rgba(59,130,246,0.4)] text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-blue-400"></div>
-                <h2 className="text-blue-400 font-black text-xs uppercase tracking-widest mb-1">Target Word</h2>
-                <h1 className="text-4xl md:text-5xl font-black text-slate-800">{currentTarget.cn}</h1>
-                <div className="absolute bottom-0 right-0 opacity-10 transform translate-x-1/4 translate-y-1/4">
-                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/186.png" className="w-24 h-24" alt="Politoed" />
+        {/* Cloud-styled Target Board */}
+        <div className="z-40 mt-2 mb-4">
+            <div className="relative group">
+                {/* Cloud Shape using multiple circles logic in tailwind/css */}
+                <div className="bg-white/95 backdrop-blur-xl px-12 py-8 rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] text-center relative z-10 border-4 border-blue-100">
+                    <h2 className="text-blue-400 font-black text-sm uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                       <span className="animate-ping">●</span> Catch this word:
+                    </h2>
+                    <h1 className="text-5xl md:text-6xl font-black text-slate-800 drop-shadow-sm tracking-tight">
+                        {currentTarget.cn}
+                    </h1>
                 </div>
+                {/* Decorative cloud "bumps" */}
+                <div className="absolute -top-4 -left-4 w-16 h-16 bg-white rounded-full"></div>
+                <div className="absolute -top-6 right-10 w-20 h-20 bg-white rounded-full"></div>
+                <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-white rounded-full"></div>
             </div>
         </div>
 
         {/* Game Area - Interactive Rain Drops */}
-        <div className="flex-1 w-full relative overflow-hidden">
+        <div className="flex-1 w-full relative">
             {drops.map(drop => (
                 <div
                     key={drop.id}
-                    onClick={() => handleDropClick(drop)}
+                    onClick={(e) => handleDropClick(drop, e)}
                     onAnimationEnd={() => onDropAnimationEnd(drop.id)}
-                    className="absolute cursor-pointer flex flex-col items-center justify-center hover:scale-110 active:scale-90 transition-transform select-none touch-none"
+                    className="absolute cursor-pointer flex flex-col items-center justify-center hover:scale-110 active:scale-90 transition-transform select-none touch-none z-30"
                     style={{
                         left: `${drop.left}%`,
-                        top: '-120px',
+                        top: '-150px',
                         animation: `fall ${drop.duration}s linear forwards`
                     }}
                 >
-                    <div className="relative">
+                    <div className="relative drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+                        {/* Realistic Teardrop Shape */}
                         <div className={`
-                            w-20 h-20 md:w-24 md:h-24 rounded-full rounded-tl-none -rotate-45 border-4 shadow-xl flex items-center justify-center
-                            bg-gradient-to-br from-blue-300 via-blue-500 to-blue-700 border-blue-200/50
+                            ${drop.size === 'small' ? 'w-16 h-16' : drop.size === 'medium' ? 'w-20 h-20' : 'w-24 h-24'}
+                            rounded-full rounded-tl-none -rotate-45 border-4 flex items-center justify-center
+                            bg-gradient-to-br from-blue-300 via-blue-500 to-indigo-700 border-blue-200/40
+                            group
                         `}>
-                            <div className="rotate-45 w-full h-full flex items-center justify-center p-2">
-                                <span className="font-black text-white text-base md:text-lg drop-shadow-md text-center leading-tight break-words">
+                            <div className="rotate-45 w-full h-full flex items-center justify-center p-3">
+                                <span className={`
+                                    font-black text-white drop-shadow-md text-center leading-tight break-words
+                                    ${drop.size === 'small' ? 'text-xs' : 'text-sm md:text-base'}
+                                `}>
                                     {drop.word}
                                 </span>
                             </div>
                         </div>
-                        {/* Realistic Glossy Shine */}
-                        <div className="absolute top-2 left-2 w-5 h-5 bg-white/40 rounded-full blur-[2px]"></div>
-                        <div className="absolute bottom-4 right-4 w-2 h-2 bg-white/20 rounded-full"></div>
+                        {/* Shine Effect */}
+                        <div className="absolute top-2 left-3 w-1/4 h-1/4 bg-white/40 rounded-full blur-[1px]"></div>
+                        <div className="absolute bottom-4 right-5 w-1 h-1 bg-white/30 rounded-full"></div>
                     </div>
+                </div>
+            ))}
+
+            {/* Splashes Layer */}
+            {splashes.map(splash => (
+                <div 
+                    key={splash.id}
+                    className="fixed pointer-events-none z-50 flex items-center justify-center"
+                    style={{ left: splash.x, top: splash.y, transform: 'translate(-50%, -50%)' }}
+                >
+                    <div className="w-12 h-12 border-4 border-blue-300 rounded-full animate-splash-circle opacity-0"></div>
+                    <div className="absolute text-2xl animate-splash-drops">💦</div>
                 </div>
             ))}
         </div>
 
-        {/* Background Decoration */}
-        <div className="absolute bottom-[-20px] left-0 right-0 h-24 bg-gradient-to-t from-blue-900/40 to-transparent pointer-events-none"></div>
+        {/* Bottom Puddle Effect */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-blue-400/20 to-transparent pointer-events-none border-t border-blue-400/10">
+            <div className="absolute bottom-4 left-1/4 text-4xl opacity-20 animate-ripple">⭕</div>
+            <div className="absolute bottom-8 right-1/3 text-2xl opacity-10 animate-ripple-delayed">⭕</div>
+        </div>
 
         <style>{`
             @keyframes fall {
                 0% { transform: translateY(0); }
-                100% { transform: translateY(115vh); }
+                100% { transform: translateY(120vh); }
             }
-            @keyframes rain {
+            @keyframes rain-fast {
                 0% { background-position: 0 0; }
-                100% { background-position: 30px 60px; }
+                100% { background-position: 100px 200px; }
             }
-            @keyframes bounce-slow {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-8px); }
+            @keyframes rain-slow {
+                0% { background-position: 0 0; }
+                100% { background-position: 50px 100px; }
             }
-            .animate-rain {
-                animation: rain 1.5s linear infinite;
+            @keyframes float {
+                0%, 100% { transform: translateY(0) translateX(0); }
+                50% { transform: translateY(-20px) translateX(10px); }
             }
-            .animate-bounce-slow {
-                animation: bounce-slow 3s ease-in-out infinite;
+            @keyframes ripple {
+                0% { transform: scale(0.5); opacity: 0.5; }
+                100% { transform: scale(2); opacity: 0; }
             }
+            @keyframes splash-circle {
+                0% { transform: scale(0.5); opacity: 1; border-width: 4px; }
+                100% { transform: scale(2.5); opacity: 0; border-width: 1px; }
+            }
+            @keyframes splash-drops {
+                0% { transform: translateY(0) scale(1); opacity: 1; }
+                100% { transform: translateY(-40px) scale(0); opacity: 0; }
+            }
+            .animate-rain-fast { animation: rain-fast 0.6s linear infinite; }
+            .animate-rain-slow { animation: rain-slow 1.5s linear infinite; }
+            .animate-float { animation: float 6s ease-in-out infinite; }
+            .animate-float-delayed { animation: float 8s ease-in-out infinite 1s; }
+            .animate-ripple { animation: ripple 3s ease-out infinite; }
+            .animate-ripple-delayed { animation: ripple 3s ease-out infinite 1.5s; }
+            .animate-splash-circle { animation: splash-circle 0.5s ease-out forwards; }
+            .animate-splash-drops { animation: splash-drops 0.4s ease-out forwards; }
+            .animate-bounce-slow { animation: bounce-slow 3s ease-in-out infinite; }
         `}</style>
     </div>
   );
