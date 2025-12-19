@@ -9,6 +9,7 @@ import { FillInBlank } from './components/games/FillInBlank';
 import { BubblePop } from './components/games/BubblePop';
 import { WordSearch } from './components/games/WordSearch';
 import { RainGame } from './components/games/RainGame';
+import { MemoryGame } from './components/games/MemoryGame';
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
@@ -60,11 +61,12 @@ function App() {
         return <WordSearch onComplete={handleGameComplete} onBack={() => setScreen('home')} />;
       case 'game7':
         return <RainGame onComplete={handleGameComplete} onBack={() => setScreen('home')} />;
+      case 'game8':
+        return <MemoryGame onComplete={handleGameComplete} onBack={() => setScreen('home')} />;
       default:
         return (
           <div className="min-h-screen bg-yellow-50 p-4 flex flex-col items-center">
             <header className="mb-6 text-center mt-4 relative flex flex-col items-center">
-              {/* Eevee Container */}
               <div className="relative mb-4">
                  <img 
                     src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png" 
@@ -72,8 +74,6 @@ function App() {
                     className="w-40 h-40 md:w-56 md:h-56 object-contain animate-bounce z-10 relative" 
                     style={{ animationDuration: '3s' }} 
                  />
-                 
-                 {/* Speech Bubble */}
                  <div className="absolute -top-2 -right-2 md:-right-8 bg-white px-4 py-3 rounded-3xl rounded-bl-none shadow-xl border-4 border-indigo-100 animate-pulse z-20 max-w-[180px]">
                     <p className="text-base md:text-lg font-black text-indigo-600 leading-tight">
                        Let's learn <br/> 
@@ -89,7 +89,6 @@ function App() {
             </header>
 
             <div className="w-full max-w-lg space-y-4 relative z-20 pb-10">
-              {/* Top Full Width Button */}
               <button 
                 onClick={() => setScreen('learn')}
                 className="bg-indigo-500 w-full py-3 rounded-3xl shadow-lg flex items-center justify-center gap-3 border-b-4 border-indigo-700 text-white transform transition hover:scale-105"
@@ -100,7 +99,6 @@ function App() {
               
               <div className="h-2"></div>
               
-              {/* Game Grid - 2 Columns */}
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                   <MenuButton onClick={() => setScreen('game1')} label="1. Detective" pokemonId={25} color="bg-blue-400" emoji="🔍" />
                   <MenuButton onClick={() => setScreen('game2')} label="2. Match" pokemonId={132} color="bg-purple-400" emoji="🃏" />
@@ -109,11 +107,11 @@ function App() {
                   <MenuButton onClick={() => setScreen('game5')} label="5. Pop!" pokemonId={7} color="bg-pink-400" emoji="🫧" />
                   <MenuButton onClick={() => setScreen('game6')} label="6. Search" pokemonId={43} color="bg-emerald-400" emoji="🔎" />
                   <MenuButton onClick={() => setScreen('game7')} label="7. Rain Drops" pokemonId={186} color="bg-blue-500" emoji="☔" />
+                  <MenuButton onClick={() => setScreen('game8')} label="8. Memory" pokemonId={151} color="bg-fuchsia-400" emoji="🧠" />
               </div>
 
               <div className="h-2"></div>
 
-              {/* Bottom Treehouse Button */}
               <button 
                  onClick={() => setScreen('treehouse')}
                  className="w-full bg-green-500 hover:bg-green-600 py-4 rounded-3xl shadow-xl flex items-center px-4 gap-4 text-white border-b-8 border-green-700 active:border-b-0 active:translate-y-2 transition-all group"

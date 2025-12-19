@@ -1,4 +1,5 @@
 
+
 export interface WordItem {
   en: string;
   cn: string;
@@ -17,6 +18,7 @@ export const vocabList: WordItem[] = [
   { en: "hotel", cn: "酒店", ipa: "/həʊˈtel/", emoji: "🏨", sentence: "We stay in a hotel when we travel." },
   { en: "have a buffet lunch", cn: "吃自助午餐", ipa: "/həv ə ˈbʊfeɪ lʌntʃ/", emoji: "🍽️", sentence: "We have a buffet lunch and eat lots of food." },
   { en: "cinema", cn: "戲院", ipa: "/ˈsɪnəmə/", emoji: "🎬", sentence: "We watch a new movie at the cinema." },
+  // Fix: Removed duplicate emoji property
   { en: "watch a film", cn: "看電影", ipa: "/wɒtʃ ə fɪlm/", emoji: "🍿", sentence: "Let's watch a film this weekend." },
   { en: "book shop", cn: "書店", ipa: "/bʊk ʃɒp/", emoji: "📚", sentence: "I buy a storybook at the book shop." },
   { en: "buy a comic", cn: "買漫畫書", ipa: "/baɪ ə ˈkɒmɪk/", emoji: "🗯️", sentence: "I go to the shop to buy a comic about heroes." },
@@ -60,4 +62,4 @@ export const pokemonList = [
   722  // Rowlet
 ];
 
-export type Screen = 'home' | 'learn' | 'game1' | 'game2' | 'game3' | 'game4' | 'game5' | 'game6' | 'game7' | 'treehouse';
+export type Screen = 'home' | 'learn' | 'game1' | 'game2' | 'game3' | 'game4' | 'game5' | 'game6' | 'game7' | 'game8' | 'treehouse';

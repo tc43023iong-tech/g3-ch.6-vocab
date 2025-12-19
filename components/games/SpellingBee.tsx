@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { vocabList } from '../../types';
 import confetti from 'canvas-confetti';
 
@@ -8,29 +8,18 @@ interface Props {
 }
 
 export const SpellingBee: React.FC<Props> = ({ onComplete, onBack }) => {
+  const shuffledVocab = useMemo(() => [...vocabList].sort(() => Math.random() - 0.5), []);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [userInput, setUserInput] = useState<string[]>([]);
-  const [scrambledLetters, setScrambledLetters] = useState<{char: string, id: number}[]>([]);
   const [isFinished, setIsFinished] = useState(false);
   
-  const currentWordObj = vocabList[currentIndex];
-  // Remove spaces for easier checking, but keep them in display logic if needed. 
+  const currentWordObj = shuffledVocab[currentIndex];
   const targetClean = currentWordObj.en.replace(/[^a-zA-Z]/g, '').toLowerCase();
 
-  useEffect(() => {
-    // Setup scrambled letters (this effect is kept for logical structure but we use pool state below)
-    const letters = targetClean.split('').map((char, index) => ({ char, id: index }));
-    const shuffled = [...letters].sort(() => Math.random() - 0.5);
-    setScrambledLetters(shuffled);
-    setUserInput([]);
-  }, [currentIndex, targetClean]);
-
-  // New State approach for drag/drop feel without drag/drop
   const [pool, setPool] = useState<{char: string, id: number}[]>([]);
   const [inputLine, setInputLine] = useState<{char: string, id: number}[]>([]);
 
   useEffect(() => {
-      const letters = targetClean.split('').map((char, idx) => ({ char, id: Math.random() })); // Random ID to allow duplicates distinctness
+      const letters = targetClean.split('').map((char) => ({ char, id: Math.random() }));
       setPool([...letters].sort(() => Math.random() - 0.5));
       setInputLine([]);
   }, [currentIndex, targetClean]);
@@ -46,17 +35,16 @@ export const SpellingBee: React.FC<Props> = ({ onComplete, onBack }) => {
   };
 
   useEffect(() => {
-      // Check win condition
       const currentString = inputLine.map(i => i.char).join('');
       if (currentString === targetClean) {
           confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24'] });
           setTimeout(() => {
-              if (currentIndex < vocabList.length - 1) {
+              if (currentIndex < shuffledVocab.length - 1) {
                   setCurrentIndex(prev => prev + 1);
               } else {
                   setIsFinished(true);
               }
-          }, 1500);
+          }, 1200);
       }
   }, [inputLine, targetClean, currentIndex]);
 
@@ -69,6 +57,7 @@ export const SpellingBee: React.FC<Props> = ({ onComplete, onBack }) => {
             </div>
             <div className="mt-8">
                 <h2 className="text-3xl font-bold text-yellow-600 mb-4">You are a Spelling Bee!</h2>
+                <p className="mb-6">Completed all {shuffledVocab.length} words.</p>
                 <button 
                     onClick={onComplete}
                     className="w-full py-4 bg-yellow-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-yellow-600 transition"
@@ -87,7 +76,7 @@ export const SpellingBee: React.FC<Props> = ({ onComplete, onBack }) => {
         <button onClick={onBack} className="text-2xl bg-white p-2 rounded-full shadow-md">🔙</button>
         <div className="flex items-center gap-3">
              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/415.png" alt="Combee" className="w-16 h-16 object-contain" />
-             <div className="text-xl font-bold text-yellow-600">Word {currentIndex + 1}/{vocabList.length}</div>
+             <div className="text-xl font-bold text-yellow-600">Word {currentIndex + 1}/{shuffledVocab.length}</div>
         </div>
       </div>
 
@@ -95,7 +84,6 @@ export const SpellingBee: React.FC<Props> = ({ onComplete, onBack }) => {
           <div className="text-9xl mb-6 animate-bounce">{currentWordObj.emoji}</div>
           <div className="text-3xl text-gray-500 font-bold mb-10">{currentWordObj.cn}</div>
 
-          {/* Input Area */}
           <div className="flex flex-wrap gap-3 justify-center mb-10 min-h-[5rem] border-4 border-dashed border-yellow-300 w-full p-6 bg-yellow-50 rounded-2xl">
              {inputLine.map((item) => (
                  <button 
@@ -106,10 +94,9 @@ export const SpellingBee: React.FC<Props> = ({ onComplete, onBack }) => {
                      {item.char}
                  </button>
              ))}
-             {inputLine.length === 0 && <span className="text-gray-400 italic mt-4 text-xl">Tap letters below to spell...</span>}
+             {inputLine.length === 0 && <span className="text-gray-400 italic mt-4 text-xl">Tap letters below...</span>}
           </div>
 
-          {/* Letter Pool */}
           <div className="flex flex-wrap gap-4 justify-center">
              {pool.map((item) => (
                  <button 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { vocabList } from '../../types';
 import confetti from 'canvas-confetti';
 
@@ -10,36 +10,26 @@ interface Props {
 const GRID_SIZE = 10;
 
 export const WordSearch: React.FC<Props> = ({ onComplete, onBack }) => {
+  const shuffledFullVocab = useMemo(() => [...vocabList].sort(() => Math.random() - 0.5), []);
+  const [round, setRound] = useState(0);
   const [grid, setGrid] = useState<string[][]>([]);
   const [wordsToFind, setWordsToFind] = useState<{word: string, found: boolean}[]>([]);
   const [selectedCells, setSelectedCells] = useState<{r: number, c: number}[]>([]);
-  const [foundCells, setFoundCells] = useState<string[]>([]); // "r-c" format
+  const [foundCells, setFoundCells] = useState<string[]>([]);
   const [isFinished, setIsFinished] = useState(false);
 
-  // Initialize Game
   useEffect(() => {
-    startNewGame();
+    startRound(0);
   }, []);
 
-  const startNewGame = () => {
-    // 1. Pick 6 suitable words (remove spaces, check length fit in grid)
-    const suitableWords = vocabList.filter(v => {
-        const clean = v.en.replace(/[^a-zA-Z]/g, '');
-        return clean.length <= GRID_SIZE;
-    });
-
-    const shuffled = [...suitableWords]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 6);
-    
-    const targets = shuffled.length < 6 ? suitableWords.slice(0, 6) : shuffled;
+  const startRound = (roundIdx: number) => {
+    const startIdx = roundIdx * 5;
+    const targets = shuffledFullVocab.slice(startIdx, startIdx + 5);
 
     const newGrid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(''));
     const placedWords: {word: string, found: boolean}[] = [];
 
-    // 2. Place words
     targets.forEach(item => {
-        // Lowercase conversion
         const word = item.en.toLowerCase().replace(/[^a-z]/g, '');
         let placed = false;
         let attempts = 0;
@@ -58,7 +48,6 @@ export const WordSearch: React.FC<Props> = ({ onComplete, onBack }) => {
         }
     });
 
-    // 3. Fill empty with lowercase alphabet
     const alphabet = "abcdefghijklmnopqrstuvwxyz";
     for(let i=0; i<GRID_SIZE; i++) {
         for(let j=0; j<GRID_SIZE; j++) {
@@ -98,22 +87,18 @@ export const WordSearch: React.FC<Props> = ({ onComplete, onBack }) => {
   };
 
   const handleCellClick = (r: number, c: number) => {
-    // Logic: User taps start letter, then taps end letter.
     if (selectedCells.length === 0) {
         setSelectedCells([{r, c}]);
     } else if (selectedCells.length === 1) {
-        // Calculate path between first click and this click
         const start = selectedCells[0];
         const path = getPath(start.r, start.c, r, c);
         
         if (path) {
             checkWord(path);
         } else {
-            // If path is invalid (not straight line), just restart selection at new cell
             setSelectedCells([{r, c}]); 
         }
     } else {
-        // Reset if already highlighted (though usually code clears it)
         setSelectedCells([{r, c}]); 
     }
   };
@@ -121,17 +106,14 @@ export const WordSearch: React.FC<Props> = ({ onComplete, onBack }) => {
   const getPath = (r1: number, c1: number, r2: number, c2: number) => {
       const path = [];
       if (r1 === r2) {
-          // Horizontal
           const start = Math.min(c1, c2);
           const end = Math.max(c1, c2);
           for(let i=start; i<=end; i++) path.push({r: r1, c: i});
       } else if (c1 === c2) {
-          // Vertical
           const start = Math.min(r1, r2);
           const end = Math.max(r1, r2);
           for(let i=start; i<=end; i++) path.push({r: i, c: c1});
       } else {
-          // No diagonal support for simplicity in G3
           return null; 
       }
       return path;
@@ -142,13 +124,11 @@ export const WordSearch: React.FC<Props> = ({ onComplete, onBack }) => {
       const reverseString = selectedString.split('').reverse().join('');
       
       const foundIndex = wordsToFind.findIndex(wf => {
-          // Compare cleaned versions
           const cleanTarget = wf.word.replace(/[^a-z]/g, '');
           return !wf.found && (cleanTarget === selectedString || cleanTarget === reverseString);
       });
 
       if (foundIndex >= 0) {
-          // Found!
           const newWords = [...wordsToFind];
           newWords[foundIndex].found = true;
           setWordsToFind(newWords);
@@ -159,12 +139,18 @@ export const WordSearch: React.FC<Props> = ({ onComplete, onBack }) => {
           
           confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
 
-          // Check win
           if (newWords.every(w => w.found)) {
-              setTimeout(() => setIsFinished(true), 1000);
+              setTimeout(() => {
+                  if (round < 3) {
+                      const nextRound = round + 1;
+                      setRound(nextRound);
+                      startRound(nextRound);
+                  } else {
+                      setIsFinished(true);
+                  }
+              }, 1000);
           }
       }
-      // Always clear selection after checking
       setSelectedCells([]);
   };
 
@@ -176,7 +162,7 @@ export const WordSearch: React.FC<Props> = ({ onComplete, onBack }) => {
              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/43.png" alt="Oddish" className="w-full h-full object-contain" />
           </div>
           <div className="mt-8">
-              <h2 className="text-3xl font-bold text-emerald-600 mb-4">You found them all!</h2>
+              <h2 className="text-3xl font-bold text-emerald-600 mb-4">You found all 20!</h2>
               <button 
                 onClick={onComplete}
                 className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-emerald-600 transition"
@@ -195,7 +181,7 @@ export const WordSearch: React.FC<Props> = ({ onComplete, onBack }) => {
         <button onClick={onBack} className="text-xl bg-white px-4 py-2 rounded-full shadow-md font-bold text-emerald-600">🔙 Back</button>
         <h1 className="text-2xl font-black text-emerald-600 flex items-center gap-2">
             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/43.png" alt="Oddish" className="w-10 h-10" />
-            Word Search
+            Round {round + 1}/4
         </h1>
       </div>
 
@@ -232,7 +218,6 @@ export const WordSearch: React.FC<Props> = ({ onComplete, onBack }) => {
               ))}
           </div>
       </div>
-      <p className="mt-4 text-emerald-600 text-sm font-bold animate-pulse">Tap start and end letters!</p>
     </div>
   );
 };

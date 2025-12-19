@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { vocabList, WordItem } from '../../types';
 import confetti from 'canvas-confetti';
 
@@ -9,6 +9,7 @@ interface Props {
 
 export const MatchMatch: React.FC<Props> = ({ onComplete, onBack }) => {
   const [round, setRound] = useState(0);
+  const shuffledFullVocab = useMemo(() => [...vocabList].sort(() => Math.random() - 0.5), []);
   
   const [currentPairs, setCurrentPairs] = useState<WordItem[]>([]);
   const [shuffledEn, setShuffledEn] = useState<WordItem[]>([]);
@@ -16,21 +17,15 @@ export const MatchMatch: React.FC<Props> = ({ onComplete, onBack }) => {
   
   const [selectedEn, setSelectedEn] = useState<string | null>(null);
   const [selectedCn, setSelectedCn] = useState<string | null>(null);
-  const [matchedIds, setMatchedIds] = useState<string[]>([]); // Store english keys of matched pairs
+  const [matchedIds, setMatchedIds] = useState<string[]>([]);
 
   useEffect(() => {
     setupRound(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const setupRound = (roundIdx: number) => {
-    let items: WordItem[] = [];
-    if (roundIdx < 4) {
-        items = vocabList.slice(roundIdx * 5, (roundIdx + 1) * 5);
-    } else {
-        // Random 5 for last round
-        items = [...vocabList].sort(() => Math.random() - 0.5).slice(0, 5);
-    }
+    const start = roundIdx * 5;
+    const items = shuffledFullVocab.slice(start, start + 5);
     
     setCurrentPairs(items);
     setShuffledEn([...items].sort(() => Math.random() - 0.5));
@@ -47,7 +42,6 @@ export const MatchMatch: React.FC<Props> = ({ onComplete, onBack }) => {
   };
 
   const handleSelectCn = (cn: string) => {
-     // Find the corresponding english word for this CN to check logic
      const correspondingEn = currentPairs.find(p => p.cn === cn)?.en;
      if (!correspondingEn || matchedIds.includes(correspondingEn)) return;
      
@@ -60,13 +54,11 @@ export const MatchMatch: React.FC<Props> = ({ onComplete, onBack }) => {
 
     const pair = currentPairs.find(p => p.en === en);
     if (pair && pair.cn === cn) {
-      // Match!
       setMatchedIds(prev => [...prev, en]);
       setSelectedEn(null);
       setSelectedCn(null);
       confetti({ particleCount: 30, spread: 50, origin: { y: 0.5 }, colors: ['#a7f3d0', '#6ee7b7'] });
     } else {
-      // No match, wait a bit then clear
       setTimeout(() => {
         setSelectedEn(null);
         setSelectedCn(null);
@@ -77,18 +69,18 @@ export const MatchMatch: React.FC<Props> = ({ onComplete, onBack }) => {
   useEffect(() => {
     if (currentPairs.length > 0 && matchedIds.length === currentPairs.length) {
       setTimeout(() => {
-        if (round < 4) {
-           setRound(r => r + 1);
-           setupRound(round + 1);
+        if (round < 3) { // 4 rounds of 5 = 20 words
+           const nextRound = round + 1;
+           setRound(nextRound);
+           setupRound(nextRound);
         } else {
-           // All done
+           // Win handled by round state in render
         }
       }, 1000);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchedIds]);
 
-  if (round === 4 && matchedIds.length === 5) {
+  if (round === 3 && matchedIds.length === 5) {
       return (
         <div className="min-h-screen bg-purple-100 flex flex-col items-center justify-center p-4">
         <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full relative">
@@ -97,7 +89,7 @@ export const MatchMatch: React.FC<Props> = ({ onComplete, onBack }) => {
           </div>
           <div className="mt-10">
               <h2 className="text-3xl font-bold text-purple-600 mb-4">Excellent!</h2>
-              <p className="text-xl mb-8">You matched all pairs!</p>
+              <p className="text-xl mb-8">You matched all 20 words!</p>
               <button 
                 onClick={onComplete}
                 className="w-full py-4 bg-purple-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-purple-600 transition"
@@ -116,12 +108,11 @@ export const MatchMatch: React.FC<Props> = ({ onComplete, onBack }) => {
         <button onClick={onBack} className="text-2xl bg-white p-2 rounded-full shadow-md">🔙</button>
         <div className="flex items-center gap-2">
             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png" alt="Ditto" className="w-12 h-12 object-contain" />
-            <div className="text-xl font-bold text-purple-500">Round {round + 1}/5</div>
+            <div className="text-xl font-bold text-purple-500">Round {round + 1}/4</div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto grid grid-cols-2 gap-4 md:gap-10">
-         {/* Chinese Column */}
          <div className="space-y-4 md:space-y-6">
             <h3 className="text-center font-bold text-gray-400 mb-2 text-lg md:text-xl">Chinese</h3>
             {shuffledCn.map((item, idx) => {
@@ -145,7 +136,6 @@ export const MatchMatch: React.FC<Props> = ({ onComplete, onBack }) => {
             })}
          </div>
 
-         {/* English Column */}
          <div className="space-y-4 md:space-y-6">
             <h3 className="text-center font-bold text-gray-400 mb-2 text-lg md:text-xl">English</h3>
             {shuffledEn.map((item, idx) => {

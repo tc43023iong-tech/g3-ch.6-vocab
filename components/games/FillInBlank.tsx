@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { vocabList, WordItem } from '../../types';
 import confetti from 'canvas-confetti';
 
@@ -8,22 +8,19 @@ interface Props {
 }
 
 export const FillInBlank: React.FC<Props> = ({ onComplete, onBack }) => {
+  const shuffledVocab = useMemo(() => [...vocabList].sort(() => Math.random() - 0.5), []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
-  const shuffle = <T,>(array: T[]): T[] => array.sort(() => Math.random() - 0.5);
+  const currentWord = shuffledVocab[currentIndex];
 
-  const currentWord = vocabList[currentIndex];
-
-  const [options] = useState(() => {
-    return vocabList.map(target => {
-        const others = vocabList.filter(w => w.en !== target.en);
-        const distractors = shuffle(others).slice(0, 3);
-        return shuffle([target, ...distractors]);
-    });
-  });
+  const currentOptions = useMemo(() => {
+    const others = vocabList.filter(w => w.en !== currentWord.en);
+    const distractors = [...others].sort(() => Math.random() - 0.5).slice(0, 3);
+    return [...distractors, currentWord].sort(() => Math.random() - 0.5);
+  }, [currentIndex, currentWord]);
 
   const handleOptionClick = (word: string) => {
     if (selectedOption) return; 
@@ -37,19 +34,17 @@ export const FillInBlank: React.FC<Props> = ({ onComplete, onBack }) => {
     }
 
     setTimeout(() => {
-      if (currentIndex < vocabList.length - 1) {
+      if (currentIndex < shuffledVocab.length - 1) {
         setCurrentIndex(prev => prev + 1);
         setSelectedOption(null);
         setIsCorrect(null);
       } else {
         setIsFinished(true);
       }
-    }, 1500);
+    }, 1200);
   };
 
-  // Helper to replace the target word in the sentence with underscores
   const getSentenceWithBlank = (item: WordItem) => {
-      // Case insensitive replacement
       const regex = new RegExp(item.en, 'gi');
       return item.sentence.replace(regex, '_________');
   };
@@ -63,6 +58,7 @@ export const FillInBlank: React.FC<Props> = ({ onComplete, onBack }) => {
           </div>
           <div className="mt-8">
               <h2 className="text-3xl font-bold text-cyan-600 mb-4">Great Job!</h2>
+              <p className="mb-6">Finished all {shuffledVocab.length} sentences.</p>
               <button 
                 onClick={onComplete}
                 className="w-full py-4 bg-cyan-500 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-cyan-600 transition"
@@ -75,15 +71,13 @@ export const FillInBlank: React.FC<Props> = ({ onComplete, onBack }) => {
     );
   }
 
-  const currentOptions = options[currentIndex];
-
   return (
     <div className="min-h-screen bg-cyan-50 p-4 flex flex-col items-center">
        <div className="w-full max-w-6xl flex justify-between items-center mb-6">
         <button onClick={onBack} className="text-2xl bg-white p-2 rounded-full shadow-md">🔙</button>
         <div className="flex items-center gap-3">
              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/235.png" alt="Smeargle" className="w-16 h-16 object-contain" />
-             <div className="text-xl font-bold text-cyan-600">Question {currentIndex + 1}/{vocabList.length}</div>
+             <div className="text-xl font-bold text-cyan-600">Question {currentIndex + 1}/{shuffledVocab.length}</div>
         </div>
       </div>
 
